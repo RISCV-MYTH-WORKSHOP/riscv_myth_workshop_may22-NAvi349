@@ -1,3 +1,20 @@
+# Table of contents
+
+- [Table of contents](#table-of-contents)
+  - [Day 2 - Application Binary Interface and verification flow](#day-2---application-binary-interface-and-verification-flow)
+    - [Application Binary Interface (ABI)](#application-binary-interface-abi)
+      - [Intro to ABI](#intro-to-abi)
+      - [Memory Allocation for double words](#memory-allocation-for-double-words)
+      - [Load, Add and Store instructions](#load-add-and-store-instructions)
+      - [RV64I registers and their ABI Names](#rv64i-registers-and-their-abi-names)
+    - [Labs using ABI function call](#labs-using-abi-function-call)
+      - [Sum of N numbers Flowchart](#sum-of-n-numbers-flowchart)
+      - [Assembly Function Call](#assembly-function-call)
+        - [Assembly code for the sum of N](#assembly-code-for-the-sum-of-n)
+        - [C program to call the assembly code](#c-program-to-call-the-assembly-code)
+        - [Compiling through a RISC-V core](#compiling-through-a-risc-v-core)
+    - [Passing the C program as a HEX file](#passing-the-c-program-as-a-hex-file)
+
 ## Day 2 - Application Binary Interface and verification flow
 
 ### Application Binary Interface (ABI)
@@ -30,8 +47,6 @@ A -->|ABI| RISC-V-Core
 
 #### Load, Add and Store instructions
 
-
-
 #### RV64I registers and their ABI Names
 
 - Load, add and store belong to $RV64I$ base instructions.
@@ -40,7 +55,6 @@ A -->|ABI| RISC-V-Core
 - Store is a S-type instruction
 - $rd$ is of size 5 bits => So $2^5 = 32$ registers
 - Naming convention is $x0$ to $x31$
-
 
 ### Labs using ABI function call
 
