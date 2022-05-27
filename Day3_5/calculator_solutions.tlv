@@ -5,8 +5,8 @@
 \TLV
    $reset = *reset;
 
-   $val1 = $rand1[3:0];
-   $val2 = $rand2[3:0];
+   $val1[31:0] = $rand1[3:0];
+   $val2[31:0] = $rand2[3:0];
    
    $num[31:0] = $reset ? 0 : (>>1$num + 1); // up - counter
    
