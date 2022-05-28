@@ -9,8 +9,11 @@
       
          $pc[31:0] = (>>1$reset) ? 32'b0 : >>1$pc + 32'd4;
          $imem_rd_en = ~($reset);
-
+      
+      @1
       ?$imem_rd_en
          @1
             $imem_rd_addr[31:0] = $pc[M4_IMEM_INDEX_CNT+1:2];
-            $instr[31:0] = $imem_rd_data[31:0];
+      
+      @1   
+         $instr[31:0] = $imem_rd_data[31:0];
