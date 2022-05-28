@@ -87,7 +87,7 @@ F --> End
 load:
   add a4, a0, zero // a4 - sum register
   add a2, a0, a1   // a2 - count register, n
-  add a3, a0, zero // a3 - intermediate register, i
+  addi a3, a0, zero // a3 - intermediate register, i
   
 loop:
   add a4, a3, a4 // add a3 to a4 every loop
