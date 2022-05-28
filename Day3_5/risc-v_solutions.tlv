@@ -89,4 +89,11 @@
          // add
          $is_add = $dec_bits === 11'b0_000_0110011;
          
+         // Register file read
          
+         ?$rs2_valid
+            $rf_rd_en2 = 1'b1;
+            $rf_rd_index2[4:0] = $rs2[4:0];
+         ?$rs1_valid
+            $rf_rd_en1 = 1'b1;
+            $rf_rd_index1[4:0] = $rs1[4:0];
