@@ -24,12 +24,21 @@
             $prod[31:0] = $out * $val2; //10
             $quot[31:0] = $out / $val2; //11   
             
-
+            
          @2
-            $tout[31:0] = ($op[1:0] == 2'b00) ? $sum :
-                        ($op[1:0] == 2'b01) ? $diff :
-                        ($op[1:0] == 2'b10) ? $prod :
-                        ($op[1:0] == 2'b11) ? $quot : 32'b0;
+            // op = 100 => memory read
+            // op = 101 => memory write
+            
+            // memory
+            $mem[31:0] = $reset ? 0 :
+                                  ($op[2:0] == 3'b101) ? >>2$tout :
+                                  >>2$mem;
+
+            $tout[31:0] = ($op[2:0] == 3'b000) ? $sum :
+                        ($op[2:0] == 3'b001) ? $diff :
+                        ($op[2:0] == 3'b010) ? $prod :
+                        ($op[2:0] == 3'b011) ? $quot :
+                        ($op[2:0] == 3'b100) ? >>2$mem : >>2$tout;
    
 
 
