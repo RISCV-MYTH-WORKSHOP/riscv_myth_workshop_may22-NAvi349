@@ -107,4 +107,14 @@
          $result[31:0] = $is_addi ? $src1_value + $imm :
                          $is_add ? $src1_value + $src2_value :
                          32'bx;
+                         
+         // Register file write
+         // should not write to r0 register
+         
+         $rd_valid_nr0 = $rd_valid && ~($rd == 0);
+         
+         ?$rd_valid_nr0
+            $rf_wr_en = 1'b1;
+            $rf_wr_index[4:0] = $rd[4:0];
+            $rf_wr_data[31:0] = $result;
             
