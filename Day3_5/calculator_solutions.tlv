@@ -16,14 +16,15 @@
          $sum[31:0] = $out + $val2;  //00
          $diff[31:0] = $out - $val2; //01
          $prod[31:0] = $out * $val2; //10
-         $quot[31:0] = $out / $val2; //11
+         $quot[31:0] = $out / $val2; //11   
          
+         $out[31:0] = ($reset | ~($valid)) ? 0 : >>2$tout;
+         
+      @2
          $tout[31:0] = ($op[1:0] == 2'b00) ? $sum :
                      ($op[1:0] == 2'b01) ? $diff :
                      ($op[1:0] == 2'b10) ? $prod :
                      ($op[1:0] == 2'b11) ? $quot : 32'b0;
-
-         $out[31:0] = ($reset | ~($valid)) ? 0 : >>2$tout;
    
 
 
