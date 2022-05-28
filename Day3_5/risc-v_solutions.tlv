@@ -17,3 +17,26 @@
       
       @1   
          $instr[31:0] = $imem_rd_data[31:0];
+         
+         //decode (IRSBJU)
+         // i - type (immediate)
+         $is_i_instr = $instr[6:2] ==? 5'b0000x ||
+                       $instr[6:2] ==? 5'b001x0 ||
+                       $instr[6:2] === 5'b11001;
+         
+         // r - type (register type)
+         $is_r_instr = $instr[6:2] == 5'b01011 ||
+                      $instr[6:2] ==? 5'b011x0 ||
+                      $instr[6:2] === 5'b10100;
+         
+         // s - type (store)
+         $is_s_instr = $instr[6:2] ==? 5'b0100x;
+         
+         // b - type (branch-type)
+         $is_b_instr = $instr[6:2] === 5'b11000;
+         
+         // j - type (jump instructions)
+         $is_j_instr = $instr[6:2] === 5'b11011;
+         
+         // u - type (upper immediate)
+         $is_u_instr = $instr[6:2] ==? 5'b0x101;
