@@ -5,7 +5,7 @@
       @0
          $reset = *reset;
          $pc[31:0] = (>>1$reset) ? 32'b0 :
-                     (>>1$valid_taken_br) ? >>1$br_tgt_pc :
+                     (>>1$taken_br) ? >>1$br_tgt_pc :
                      >>1$inc_pc;
          
          $imem_rd_en = ~($reset);
@@ -114,23 +114,23 @@
          
          // Register file write
          // should not write to r0 register
-         
-         $rd_valid_nr0 = ($rd_valid) && (~($rd == 0));
-         
-         $rf_wr_en = $rd_valid_nr0;
-         $rf_wr_index[4:0] = $rd[4:0];
-         $rf_wr_data[31:0] = $result[31:0];
+         ?$rd_valid
+            $rf_wr_en = !($rd == 5'b0);
+            $rf_wr_index[4:0] = $rd[4:0];
             
+         $rf_wr_data[31:0] = $rf_wr_en ? $result : >>1$rf_wr_data ;
+         
+                     
          // check conditions for branch instructions
          
          
          $taken_br = $is_beq ? ( $src1_value == $src2_value ) :
-                        $is_bne ? ( $src1_value != $src2_value ) :
-                        $is_blt ? ( ( $src1_value < $src2_value ) ^ ( $src1_value[31] != $src2_value[31] ) ) :
-                        $is_bge ? ( ( $src1_value >= $src2_value ) ^ ( $src1_value[31] != $src2_value[31] ) ) :
-                        $is_bltu ? ( $src1_value < $src2_value ) :
-                        $is_bgeu ? ( $src1_value >= $src2_value ) : 1'b0;
+                     $is_bne ? ( $src1_value != $src2_value ) :
+                     $is_blt ? ( ( $src1_value < $src2_value ) ^ ( $src1_value[31] != $src2_value[31] ) ) :
+                     $is_bge ? ( ( $src1_value >= $src2_value ) ^ ( $src1_value[31] != $src2_value[31] ) ) :
+                     $is_bltu ? ( $src1_value < $src2_value ) :
+                     $is_bgeu ? ( $src1_value >= $src2_value ) : 1'b0;
          
-         $valid_taken_br = $is_b_instr && $taken_br;
-         $br_tgt_pc = $pc + $imm;
+         
+         $br_tgt_pc[31:0] = $pc + $imm; // this one line wasted 2 hours for me! always check bitlengths of output!
             
