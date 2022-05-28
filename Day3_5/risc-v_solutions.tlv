@@ -71,3 +71,22 @@
             $funct3[2:0] = $instr[14:12];
             
          $opcode[6:0] = $instr[6:0];   
+         
+         // Decode each instruction
+         $dec_bits[10:0] = {$funct7[5], $funct3, $opcode};
+         
+         // b-type
+         $is_beq = $dec_bits ==? 11'bx_000_1100011;
+         $is_bne = $dec_bits ==? 11'bx_001_1100011;
+         $is_blt = $dec_bits ==? 11'bx_100_1100011;
+         $is_bge = $dec_bits ==? 11'bx_101_1100011;
+         $is_bltu = $dec_bits ==? 11'bx_110_1100011;
+         $is_bgeu = $dec_bits ==? 11'bx_111_1100011;
+         
+         // addi
+         $is_addi = $dec_bits ==? 11'bx_000_0010011;
+         
+         // add
+         $is_add = $dec_bits === 11'b0_000_0110011;
+         
+         
