@@ -5,18 +5,20 @@
       @0
          $reset = *reset;
          $pc[31:0] = (>>1$reset) ? 32'b0 :
-                     (>>3$valid_taken_br) ? >>3$br_tgt_pc : // branch only every third cycle
-                     >>3$pc + 32'd4;
+                     (>>3$valid_taken_br) ? >>3$br_tgt_pc : // branch every third cycle
+                     >>1$pc + 32'd4;
          
          
          $imem_rd_en = ~$reset;
-         $imem_rd_addr[M4_IMEM_INDEX_CNT-1:0] = $pc[M4_IMEM_INDEX_CNT+1:2];
+         
          
          // First attempt at solving hazards
          // Insert a new instruction at every third cycle
          $start = ~($reset) && >>1$reset;
-         $valid = $reset ? 0 : $start ? 1 : >>3$valid;
+         //$valid = $reset ? 0 : $start ? 1 : >>3$valid;
          
+         
+         $imem_rd_addr[M4_IMEM_INDEX_CNT-1:0] = $pc[M4_IMEM_INDEX_CNT+1:2];         
       
       
       @1
@@ -152,3 +154,6 @@
          //$rf_wr_data[31:0] = $rf_wr_en ? $result : >>1$rf_wr_data ;
          $rf_wr_data[31:0] = $result;
          
+         //NAND == NOT(OR)
+         //Whenever branch is taken do not allow the next two instructions to write to register file
+         $valid = ~( (>>1$valid_taken_br) && (>>1$valid_taken_br) );         
