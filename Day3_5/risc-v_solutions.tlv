@@ -7,7 +7,10 @@
          $pc[31:0] = (>>1$reset) ? 32'b0 :
                      (>>3$valid_load) ? >>3$pc : // load instr - go back in PC - equi - stall
                      (>>3$valid_taken_br) ? >>3$br_tgt_pc : // take branch from third stage
+                     (>>3$is_jal && >>3$valid_jump) ? >>3$br_tgt_pc :
+                     (>>3$is_jalr && >>3$valid_jump) ? >>3$jalr_tgt_pc :
                      >>1$pc + 32'd4;
+         
          
          
          $imem_rd_en = ~$reset;
@@ -147,6 +150,9 @@
          $is_slli = $dec_bits === 11'b0_001_0010011;
          $is_srli = $dec_bits === 11'b0_101_0010011;
          $is_srai = $dec_bits === 11'b1_101_0010011;
+         
+         // jump
+         $is_jump = $is_jal || $is_jalr;         
       
       @2
          // Register file read
@@ -169,8 +175,7 @@
             
          $br_tgt_pc[31:0] = $pc + $imm; // this one line wasted 2 hours for me!   
          
-      @3
-         
+      @3        
          
                      
          // check conditions for branch instructions
@@ -244,10 +249,21 @@
          
          
          //$valid = $is_load ? 1'b0 : ~( (>>1$valid_taken_br) && (>>1$valid_taken_br) ) ;
-         $valid = ~( >>1$valid_taken_br || >>2$valid_taken_br || >>1$valid_load || >>2$valid_load);
+         //$valid = ~( >>1$valid_taken_br || >>2$valid_taken_br || >>1$valid_load || >>2$valid_load);
          
          // also we wait till 2 cycles before loading
-         $valid_load = $is_load && $valid;   
+         $valid_load = $is_load && $valid;
+         
+         // Jump validity
+                  
+         $valid_jump = $is_jump && $valid;
+         
+         $valid = ~( >>1$valid_taken_br || >>2$valid_taken_br || >>1$valid_load ||
+                     >>2$valid_load || >>1$$valid_jump || >>2$valid_jump);
+         // Jump Address
+                  
+         $jalr_tgt_pc[31:0] = $src1_value + $imm;
+         
          
       @4
          
