@@ -125,12 +125,13 @@
          $is_jalr = $dec_bits ==? 11'bx_000_1100111;
          
          // load all types of load
-         $is_load = $dec_bits ==? 11'bx_000_xxxxxxx;
+         $is_load = $dec_bits ==? 11'bx_xxx_0000011;
          
          // store
-         $is_sb = $dec_bits ==? 11'bx_000_0100011;
-         $is_sh = $dec_bits ==? 11'bx_001_0100011;
-         $is_sw = $dec_bits ==? 11'bx_010_0100011;
+         $is_store = $dec_bits ==? 11'bx_xxx_0100011;
+         //$is_sb = $dec_bits ==? 11'bx_000_0100011;;
+         //$is_sh = $dec_bits ==? 11'bx_001_0100011;
+         //$is_sw = $dec_bits ==? 11'bx_010_0100011;
          
          // logical operations
          $is_slti = $dec_bits ==? 11'bx_010_0010011; // set if less than
