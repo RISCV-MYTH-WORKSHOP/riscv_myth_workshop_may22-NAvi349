@@ -5,11 +5,15 @@
       @0
          $reset = *reset;
          $pc[31:0] = (>>1$reset) ? 32'b0 :
-                     (>>1$taken_br) ? >>1$br_tgt_pc :
-                     >>1$inc_pc;
+                     (>>3$valid_taken_br) ? >>3$br_tgt_pc : // branch only every third cycle
+                     >>3$pc + 32'd4;
          
          $imem_rd_en = ~($reset);
          $imem_rd_addr[M4_IMEM_INDEX_CNT-1:0] = $pc[M4_IMEM_INDEX_CNT+1:2];
+         // First attempt at solving hazards
+         // Insert a new instruction at every third cycle
+         $start = ~($reset) && >>1$reset;
+         $valid = $reset ? 0 : $start ? 1 : >>3$valid;
       
       @1
          
@@ -115,7 +119,7 @@
          // Register file write
          // should not write to r0 register
          ?$rd_valid
-            $rf_wr_en = !($rd == 5'b0);
+            $rf_wr_en = !($rd == 5'b0) && $valid;
             $rf_wr_index[4:0] = $rd[4:0];
             
          $rf_wr_data[31:0] = $rf_wr_en ? $result : >>1$rf_wr_data ;
@@ -133,4 +137,6 @@
          
          
          $br_tgt_pc[31:0] = $pc + $imm; // this one line wasted 2 hours for me! always check bitlengths of output!
-            
+      
+      @3
+         $valid_taken_br = $valid && $taken_br;
