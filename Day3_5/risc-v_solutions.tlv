@@ -5,7 +5,8 @@
       @0
          $reset = *reset;
          $pc[31:0] = (>>1$reset) ? 32'b0 :
-                     (>>3$valid_taken_br) ? >>3$br_tgt_pc : // branch every third cycle
+                     (>>3$valid_load) ? >>3$pc : // load instr - go back in PC - equi - stall
+                     (>>3$valid_taken_br) ? >>3$br_tgt_pc : // take branch from third stage
                      >>1$pc + 32'd4;
          
          
@@ -229,6 +230,15 @@
          //$rf_wr_data[31:0] = $rf_wr_en ? $result : >>1$rf_wr_data ;
          $rf_wr_data[31:0] = $result;
          
+         $rf_wr_data[31:0] = $result;
+         
          //NAND == NOT(OR)
          //Whenever branch is taken do not allow the next two instructions to write to register file
-         $valid = ~( (>>1$valid_taken_br) && (>>1$valid_taken_br) );         
+         //Whenver there is a load instruction, next two instructions are invalid
+         
+         
+         //$valid = $is_load ? 1'b0 : ~( (>>1$valid_taken_br) && (>>1$valid_taken_br) ) ;
+         $valid = ~( >>1$valid_taken_br || >>2$valid_taken_br || >>1$valid_load || >>2$valid_load);
+         
+         // also we wait till 2 cycles before loading
+         $valid_load = $is_load && $valid;   
