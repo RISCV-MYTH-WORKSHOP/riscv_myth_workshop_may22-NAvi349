@@ -8,34 +8,33 @@
                      (>>3$valid_taken_br) ? >>3$br_tgt_pc : // branch only every third cycle
                      >>3$pc + 32'd4;
          
-         $imem_rd_en = ~($reset);
+         
+         $imem_rd_en = ~$reset;
          $imem_rd_addr[M4_IMEM_INDEX_CNT-1:0] = $pc[M4_IMEM_INDEX_CNT+1:2];
+         
          // First attempt at solving hazards
          // Insert a new instruction at every third cycle
          $start = ~($reset) && >>1$reset;
          $valid = $reset ? 0 : $start ? 1 : >>3$valid;
+         
+      
       
       @1
          
          $instr[31:0] = $imem_rd_data[31:0];
-         $inc_pc[31:0] = $pc + 32'd4;
          
          //decode (IRSBJU)
          // i - type (immediate)
-         $is_i_instr = $instr[6:2] ==? 5'b0000x ||
-                       $instr[6:2] ==? 5'b001x0 ||
-                       $instr[6:2] == 5'b11001;
+         $is_i_instr = ($instr[6:2] ==? 5'b0000x) || ($instr[6:2] ==? 5'b001x0) || ($instr[6:2] == 5'b11001);
          
          // r - type (register type)
-         $is_r_instr = $instr[6:2] == 5'b01011 ||
-                      $instr[6:2] ==? 5'b011x0 ||
-                      $instr[6:2] == 5'b10100;
+         $is_r_instr = ($instr[6:2] == 5'b01011) || ($instr[6:2] ==? 5'b011x0) || ($instr[6:2] == 5'b10100);
          
          // s - type (store)
          $is_s_instr = $instr[6:2] ==? 5'b0100x;
          
          // b - type (branch-type)
-         $is_b_instr = $instr[6:2] ==? 5'b11000;
+         $is_b_instr = $instr[6:2] == 5'b11000;
          
          // j - type (jump instructions)
          $is_j_instr = $instr[6:2] == 5'b11011;
@@ -58,9 +57,13 @@
          // R, S, B
          $rs2_valid = $is_r_instr || $is_s_instr || $is_b_instr;
          // R, I, S, B
-         $rs1_valid = $is_r_instr || $is_i_instr || $is_s_instr || $is_b_instr;         
+         $rs1_valid = $is_r_instr || $is_i_instr || $is_s_instr || $is_b_instr;
+         
          // R, I, U, J
-         $rd_valid = $is_r_instr || $is_i_instr || $is_u_instr || $is_j_instr;
+         // valid only during $valid
+         
+         $rd_valid = $is_r_instr || $is_i_instr || $is_u_instr || $is_j_instr ;
+         
          // R-type only
          $funct7_valid = $is_r_instr;
          // R, I, S, B
@@ -96,33 +99,24 @@
          
          // add
          $is_add = $dec_bits === 11'b0_000_0110011;
-         
+      
+      @2
          // Register file read
          
-         $rf_rd_en2 = $rs2_valid;         
-         $rf_rd_index2[4:0] = $rs2[4:0];
+         $rf_rd_en2 = $rs2_valid;
+         ?$rs2_valid
+            $rf_rd_index2[4:0] = $rs2[4:0];
          $src2_value[31:0] = $rf_rd_data2[31:0];
-         
-         
+            
          $rf_rd_en1 = $rs1_valid;
-         $rf_rd_index1[4:0] = $rs1[4:0];
+         ?$rs2_valid
+            $rf_rd_index1[4:0] = $rs1[4:0];
          $src1_value[31:0] = $rf_rd_data1[31:0];
             
-         // Instruction Execution
+         $br_tgt_pc[31:0] = $pc + $imm; // this one line wasted 2 hours for me!   
          
-         // ALU Decoder
+      @3
          
-         $result[31:0] = $is_addi ? $src1_value + $imm :
-                         $is_add ? $src1_value + $src2_value :
-                         32'bx;
-         
-         // Register file write
-         // should not write to r0 register
-         ?$rd_valid
-            $rf_wr_en = !($rd == 5'b0) && $valid;
-            $rf_wr_index[4:0] = $rd[4:0];
-            
-         $rf_wr_data[31:0] = $rf_wr_en ? $result : >>1$rf_wr_data ;
          
                      
          // check conditions for branch instructions
@@ -135,8 +129,20 @@
                      $is_bltu ? ( $src1_value < $src2_value ) :
                      $is_bgeu ? ( $src1_value >= $src2_value ) : 1'b0;
          
+         $valid_taken_br = $valid && $taken_br; // branch taker unit
+         // ALU Decoder
          
-         $br_tgt_pc[31:0] = $pc + $imm; // this one line wasted 2 hours for me! always check bitlengths of output!
-      
-      @3
-         $valid_taken_br = $valid && $taken_br;
+         $result[31:0] = $is_addi ? $src1_value + $imm :
+                         $is_add ? $src1_value + $src2_value :
+                         32'bx;
+                         
+         // Register file write
+         // should not write to r0 register
+         // write only during valid time
+         
+         $rf_wr_en = !($rd[4:0] == 5'b0) && $valid && $rd_valid;
+         $rf_wr_index[4:0] = $rd[4:0];
+            
+         //$rf_wr_data[31:0] = $rf_wr_en ? $result : >>1$rf_wr_data ;
+         $rf_wr_data[31:0] = $result;
+         
