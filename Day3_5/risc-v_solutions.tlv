@@ -223,14 +223,20 @@
          // Register file write
          // should not write to r0 register
          // write only during valid time
+         // enable when there was a valid load two cycles ago
          
-         $rf_wr_en = !($rd[4:0] == 5'b0) && $valid && $rd_valid;
-         $rf_wr_index[4:0] = $rd[4:0];
-            
-         //$rf_wr_data[31:0] = $rf_wr_en ? $result : >>1$rf_wr_data ;
-         $rf_wr_data[31:0] = $result;
+         $rf_wr_en = (!($rd[4:0] == 5'b0) && $rd_valid && $valid) || (>>2$valid_load);
          
-         $rf_wr_data[31:0] = $result;
+         //$rf_wr_index[4:0] = $rd[4:0];
+         
+         // for load
+         $rf_wr_index[4:0] = (>>2$valid_load) ? >>2$rd : $rd;
+         
+         //$rf_wr_data[31:0] = $result;
+         
+         // for load from memory
+         // if there is a valid_load two cycles ago, load the data
+         $rf_wr_data[31:0] = (>>2$valid_load) ? >>2$ld_data : $result;
          
          //NAND == NOT(OR)
          //Whenever branch is taken do not allow the next two instructions to write to register file
