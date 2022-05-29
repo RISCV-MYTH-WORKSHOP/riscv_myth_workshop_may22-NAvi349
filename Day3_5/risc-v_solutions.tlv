@@ -248,3 +248,22 @@
          
          // also we wait till 2 cycles before loading
          $valid_load = $is_load && $valid;   
+         
+      @4
+         
+         
+         // store D[addr] <= rs2
+         // load rd <= dmem[addr]
+         // addr <= rs1 + imm
+         
+         $dmem_addr[3:0] = $result[5:2]; // rs1 + imm
+         
+         $dmem_wr_en = $is_s_instr && $valid; // store data
+         $dmem_wr_data[31:0] = $src2_value;
+         
+         
+         $dmem_rd_en = $valid_load; // load instruction
+         
+      @5
+         $ld_data[31:0] = $dmem_rd_data; // load data
+         
